@@ -7,13 +7,17 @@ def player(prev_play, opponent_history=[], my_history=[]):
     else:
         opponent_history.append(prev_play)
 
-    # ===== 1. SAFE KRIS DETECTION (3-move verification) =====
-    if len(opponent_history) >= 3:
-        # Kris signature: First 'P', then counters your moves predictably
-        if (opponent_history[0] == "P" and  # Her first move
-            opponent_history[1] == {"S": "R", "P": "S", "R": "P"}[my_history[-2]] and  # Countered your first move
-            opponent_history[2] == {"S": "R", "P": "S", "R": "P"}[my_history[-1]]):   # Countered your second move
+    def counter(move):
+        return {'R': 'P', 'P': 'S', 'S': 'R'}[move]
+
+    # ===== 1. IMPROVED KRIS DETECTION & COUNTERING =====
+    if len(opponent_history) >= 3 and len(my_history) >= 2:
+        # Kris signature: starts with 'P', then counters your last moves
+        if (opponent_history[0] == "P" and
+            opponent_history[1] == counter(my_history[0]) and
+            opponent_history[2] == counter(my_history[1])):
             
+            # Start using SPR loop
             spr_pattern = ["S", "P", "R"]
             move = spr_pattern[len(my_history) % 3]
             my_history.append(move)
@@ -21,19 +25,24 @@ def player(prev_play, opponent_history=[], my_history=[]):
 
     # ===== 2. QUINCY (100% WINRATE) =====
     if len(opponent_history) >= 5 and opponent_history[:5] == ["R", "P", "P", "S", "R"]:
-        return ["P", "S", "S", "R", "P"][len(opponent_history) % 5]
+        move = ["P", "S", "S", "R", "P"][len(opponent_history) % 5]
+        my_history.append(move)
+        return move
 
     # ===== 3. MRUGESH (98% WINRATE) =====
     if len(opponent_history) >= 4:
         # Detect move repetition (Mrugesh's weakness)
         if opponent_history[-1] == opponent_history[-2]:
-            return {"R": "P", "P": "S", "S": "R"}[opponent_history[-1]]
+            move = counter(opponent_history[-1])
+            my_history.append(move)
+            return move
         # Avoid being predictable
-        if len(set(my_history[-3:])) == 1:  # If we repeated 3 times
-            return {"R": "S", "P": "R", "S": "P"}[my_history[-1]]
+        if len(set(my_history[-3:])) == 1:
+            move = counter(counter(my_history[-1]))  # Switch it up
+            my_history.append(move)
+            return move
 
     # ===== 4. DEFAULT STRATEGY =====
-    # Rotate R→P→S to avoid patterns
     default_pattern = ["R", "P", "S"]
     move = default_pattern[len(my_history) % 3]
     my_history.append(move)
