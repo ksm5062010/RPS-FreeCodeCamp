@@ -10,7 +10,7 @@ def player(prev_play, opponent_history=[], my_history=[]):
     def counter(move):
         return {'R': 'P', 'P': 'S', 'S': 'R'}[move]
 
-    # ===== 1. IMPROVED KRIS DETECTION & COUNTERING =====
+    # Kris Counter
     if len(opponent_history) >= 3 and len(my_history) >= 2:
         # Kris signature: starts with 'P', then counters your last moves
         if (opponent_history[0] == "P" and
@@ -23,13 +23,13 @@ def player(prev_play, opponent_history=[], my_history=[]):
             my_history.append(move)
             return move
 
-    # ===== 2. QUINCY (100% WINRATE) =====
+    # Quincy Counter
     if len(opponent_history) >= 5 and opponent_history[:5] == ["R", "P", "P", "S", "R"]:
         move = ["P", "S", "S", "R", "P"][len(opponent_history) % 5]
         my_history.append(move)
         return move
 
-    # ===== 3. MRUGESH (98% WINRATE) =====
+    # Mrugesh Counter
     if len(opponent_history) >= 4:
         # Detect move repetition (Mrugesh's weakness)
         if opponent_history[-1] == opponent_history[-2]:
@@ -42,7 +42,7 @@ def player(prev_play, opponent_history=[], my_history=[]):
             my_history.append(move)
             return move
 
-    # ===== 4. DEFAULT STRATEGY =====
+    # Default Strategy
     default_pattern = ["R", "P", "S"]
     move = default_pattern[len(my_history) % 3]
     my_history.append(move)
